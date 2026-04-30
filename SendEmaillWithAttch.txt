@@ -1,0 +1,47 @@
+// Clean XML
+Func<string, string> CleanXml = rawXml =>
+{
+    if (string.IsNullOrWhiteSpace(rawXml))
+        throw new Exception("XML is empty");
+
+    rawXml = rawXml.Trim('\uFEFF', '\u200B');
+
+    int xmlStart = rawXml.IndexOf("<?xml", StringComparison.OrdinalIgnoreCase);
+    if (xmlStart > 0)
+        rawXml = rawXml.Substring(xmlStart);
+
+    rawXml = rawXml.Replace("“", "\"").Replace("”", "\"");
+    return rawXml.Trim();
+};
+
+string cleanedXML = string.IsNullOrEmpty(inputXMLString)? "": CleanXml(inputXMLString);
+
+var tblMailSetting = (from m in Db.MailSetting where m.Company == this.callContextClient.CurrentCompany select m).FirstOrDefault();
+
+var mailer = this.GetMailer(async: false);
+var message = new Ice.Mail.SmtpMail();
+
+message.SetFrom(tblMailSetting == null? "noreply@epicor.com": tblMailSetting.EmailFromAddr);
+
+
+message.SetTo(string.IsNullOrEmpty(toEmail)? "testmail@mydomain.com": toEmail);  //change testmail to working email 
+message.SetSubject("PDF + XML Attachment Test"); //change your subject here 
+message.SetBody("Attached PDF and XML file."); //change body if needed
+
+// PDF
+byte[] pdfBytes = Convert.FromBase64String(inputPDFBase64);
+var pdfStream = new System.IO.MemoryStream(pdfBytes);
+
+// XML
+byte[] xmlBytes = System.Text.Encoding.UTF8.GetBytes(cleanedXML);
+var xmlStream = new System.IO.MemoryStream(xmlBytes);
+
+// Attachments
+var attachments = new List<KeyValuePair<string, System.IO.Stream>>
+{
+    new KeyValuePair<string, System.IO.Stream>("Document.pdf", pdfStream),
+    new KeyValuePair<string, System.IO.Stream>("Invoice.xml", xmlStream)
+};
+
+// Send
+mailer.Send(message, attachments);
