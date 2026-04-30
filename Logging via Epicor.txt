@@ -1,0 +1,11 @@
+String filename = string.Format(@"\\LocalHost\EpicorData\INOVAXE\LogFiles\{0}", FileName);
+Action<string> WriteLine = (s) => {
+  try{
+    System.IO.StreamWriter objWriter = new System.IO.StreamWriter(filename, System.IO.File.Exists(filename));
+    try{objWriter.WriteLine(string.Format("{0:hh:mm:ss} {1}", DateTime.Now, s));}catch{}
+    objWriter.Close();
+    objWriter = null;
+  }
+  catch{}
+};
+WriteLine(ExportString);
