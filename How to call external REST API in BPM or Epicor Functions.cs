@@ -11,7 +11,7 @@ try
                           where row.CodeTypeID == "RTSCRED" && row.CodeID == "EVENT_API" 
                           select row).FirstOrDefault();
     
-    string eventApiUrl = tblRfxcelEvent?.LongDesc ?? "https://keeler-qa.track-n-trace.net/rts/public/api/v1/events";
+    string eventApiUrl = tblRfxcelEvent?.LongDesc ?? "URL WILL COME HERE";
 
     // Define business step variable
     string bizStepReceiving = "urn:epcglobal:cbv:bizstep:receiving";
