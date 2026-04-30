@@ -1,0 +1,35 @@
+Func<Erp.Tablesets.JobEntryTableset, Erp.Tablesets.UpdExtJobEntryTableset, Erp.Tablesets.UpdExtJobEntryTableset> CopyTablesetData = (sourceTableset, targetTableset) =>
+{
+    var sourceProps = sourceTableset.GetType().GetProperties();
+    var targetProps = targetTableset.GetType().GetProperties();
+
+    foreach (var sourceProp in sourceProps)
+    {
+        var targetProp = targetProps.FirstOrDefault(p => p.Name == sourceProp.Name);
+        if (targetProp == null || !typeof(System.Data.DataTable).IsAssignableFrom(sourceProp.PropertyType))
+            continue;
+
+        var sourceTable = sourceProp.GetValue(sourceTableset) as System.Data.DataTable;
+        var targetTable = targetProp.GetValue(targetTableset) as System.Data.DataTable;
+
+        if (sourceTable == null || targetTable == null)
+            continue;
+
+        foreach (System.Data.DataRow row in sourceTable.Rows)
+        {
+            var newRow = targetTable.NewRow();
+            foreach (System.Data.DataColumn col in sourceTable.Columns)
+            {
+                if (targetTable.Columns.Contains(col.ColumnName))
+                {
+                    newRow[col.ColumnName] = row[col.ColumnName];
+                }
+            }
+
+            newRow["RowMod"] = "A";
+            targetTable.Rows.Add(newRow);
+        }
+    }
+
+    return targetTableset;
+};
